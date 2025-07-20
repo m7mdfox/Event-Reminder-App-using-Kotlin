@@ -112,9 +112,10 @@ fun addEvent() {
     }
     val x: Event = Event(++counter, date, time, message)
     events.add(x)
-    println("Your Event: ${x.printEvent()} is added")
-    val flag=true
-    while (flag){
+    print("Your Event: ")
+    x.printEvent()
+    println("is added")
+    while (true) {
         println("Do you want to add another event or exit to main menu?")
         println("1. Add an Event")
         println("2. Main Menu")
@@ -124,10 +125,12 @@ fun addEvent() {
                 addEvent()
                 return
             }
+
             "2" -> {
                 menu()
                 return
             }
+
             else -> {
                 println("Invalid input.")
             }
@@ -138,18 +141,146 @@ fun addEvent() {
 
 fun deleteEvent() {
     println("=========================== Delete Event ============================\n\n")
+    while (true) {
+        println("Enter a valid Event ID : (to go to main menu enter 0 )")
+        val input = readLine()?.toInt()
+        if (input == 0) {
+            menu()
+            return
+        }
+        if (input != null) {
+            val ev = findEventbyId(input)
+            if (ev != null) {
+                print("Event: ")
+                events[ev].printEvent()
+                println(" has been deleted!")
+                events.removeAt(ev)
+                menu()
+                return
+            } else {
+                println("Invalid ID")
+                continue
+            }
+        }
+        println("Invalid input!")
+    }
+
 
 }
 
 fun findEvent() {
     println("============================ Find Event =============================\n\n")
+    while (true) {
+        println("Please enter a valid option: ")
+        println("1. Find Event by ID")
+        println("2. Find Event by Date")
+        println("3. Find Event by Time")
+        println("4. Return to main menu")
+        val input = readLine().toString()
+        when (input) {
+            "1" -> {
+                while (true) {
+                    println("Enter a valid Event ID : (to go backward enter 0 )")
+                    val input = readLine()?.toInt()
+                    if (input == 0) {
+                        findEvent()
+                        return
+                    }
+                    if (input != null) {
+                        val ev = findEventbyId(input)
+                        if (ev != -1) {
+                            println("Event: ")
+                            events[ev].printEvent()
+                            println(" has been found!")
+                            menu()
+                            return
+                        } else {
+                            println("Invalid ID")
+                            continue
+                        }
+                    }
+                    println("Invalid input!")
+                }
+            }
 
+            "2" -> {
+                while (true) {
+                    try {
+                        println("Enter a date (yyyy-MM-dd): (to go backward enter 0 )")
+                        val input = readLine().toString()
+                        if (input == "0") {
+                            findEvent()
+                            return
+                        }
+                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                        val date = LocalDate.parse(input, formatter)
+                        val event = findEventbyDate(date)
+                        if (event != null) {
+                            println("Found Events are : ")
+                            event.forEach { it.printEvent() }
+                            menu()
+                            return
+                        } else {
+                            println("There is no event with this \"$date\" date")
+                        }
 
+                    } catch (e: Exception) {
+                        println("Invalid date format. Please use yyyy-MM-dd.")
+                    }
+                }
+            }
+
+            "3" -> {
+                while (true) {
+                    try {
+                        println("Enter a time (HH:mm): (to go backward enter 0 )")
+                        val input = readLine().toString()
+                        if (input == "0") {
+                            findEvent()
+                            return
+                        }
+                        val formatter = DateTimeFormatter.ofPattern("HH:mm")
+                        val time = LocalTime.parse(input, formatter)
+                        val event = findEventbyTime(time)
+                        if (event != null) {
+                            println("Events found are : ")
+                            event.forEach { it.printEvent() }
+                            menu()
+                            return
+                        } else {
+                            println("there is no events found in that time")
+                        }
+                    } catch (e: DateTimeParseException) {
+                        println("Invalid time format. Please use HH:mm (e.g., 14:30).")
+                    }
+                }
+            }
+
+            "4" -> {
+                menu()
+            }
+        }
+    }
+
+}
+
+fun findEventbyId(id: Int): Int {
+    return events.indexOfFirst { it.id == id }
+}
+
+fun findEventbyDate(localDate: LocalDate): List<Event> {
+    return events.filter { event -> event.date == localDate }
+}
+
+fun findEventbyTime(localTime: LocalTime): List<Event> {
+    return events.filter { it.time == localTime }
 }
 
 fun viewEvents() {
     println("=========================== View Events =============================\n\n")
-
+    if (events.size == 0) {
+        println("There is no Events to display")
+    }
     for (event in events) {
         event.printEvent()
     }
